@@ -713,7 +713,7 @@ export class Messaging {
   }
 
   static async sendMessageToChatUser(query: ChatRequestData) {
-    const path = "topic/chat/chatNotify" + query.senderUid;
+    const path = "topic/chat/chatNotify" + query.senderUid ?? query.uid;
     const uids = (await this.removeUserHasSubscriptionOff(query.uids, path)).join(",");
     query.uids = uids;
     if (!query.uids) return { success: 0, error: 0 };
