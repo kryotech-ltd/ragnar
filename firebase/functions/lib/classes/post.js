@@ -252,9 +252,9 @@ class Post {
         const payload = messaging_1.Messaging.topicPayload("posts_" + category, {
             title: (_a = data.title) !== null && _a !== void 0 ? _a : "",
             body: (_b = data.content) !== null && _b !== void 0 ? _b : "",
-            postId: id,
+            id: id,
             type: "post",
-            uid: data.uid,
+            senderUid: data.uid,
         });
         return admin.messaging().send(payload);
     }

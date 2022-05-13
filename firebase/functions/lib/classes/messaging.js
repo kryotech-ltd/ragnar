@@ -8,6 +8,7 @@ const utils_1 = require("./utils");
 const axios_1 = require("axios");
 const fireflutter_config_1 = require("../fireflutter.config");
 const category_1 = require("./category");
+const user_1 = require("./user");
 class Messaging {
     /**
      * Creates(or updates) a token document with uid and do `token-update` process as decribed in README.md.
@@ -82,7 +83,9 @@ class Messaging {
             };
         }
         // subscribe user tokens to topic
-        const res = await admin.messaging().subscribeToTopic(tokens, data.topic);
+        const res = await admin
+            .messaging()
+            .subscribeToTopic(tokens, data.topic);
         // remove invalid tokens if any
         const failureTokens = await this.removeInvalidTokensFromResponse(tokens, res);
         // return failuretokens tokens with failure reason and success and failure count
@@ -122,7 +125,9 @@ class Messaging {
             };
         }
         // unsubscribe user tokens to topic
-        const res = await admin.messaging().unsubscribeFromTopic(tokens, data.topic);
+        const res = await admin
+            .messaging()
+            .unsubscribeFromTopic(tokens, data.topic);
         // remove invalid tokens if any
         const failureTokens = await this.removeInvalidTokensFromResponse(tokens, res);
         // return failuretokens tokens with failure reason and success and failure count
@@ -510,20 +515,27 @@ class Messaging {
         payload["topic"] = "/topics/" + topic;
         return payload;
     }
+    // static checkQueryPayload(query: any): SendMessageBaseRequest {
+    //   query.id = query.id ?? query.postId ?? "";
+    //   query.body = query.body ?? query.content ?? "";
+    //   query.senderUid = query.senderUid ?? query.uid ?? "";
+    //   return query;
+    // }
     static preMessagePayload(query) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        // query = this.checkQueryPayload(query);
         if (!query.title && !query.body)
             throw defines_1.ERROR_TITLE_AND_BODY_CANT_BE_BOTH_EMPTY;
         const res = {
             data: {
-                id: query.postId ? query.postId : query.id ? query.id : "",
-                type: (_a = query.type) !== null && _a !== void 0 ? _a : "",
-                senderUid: (_c = (_b = query.senderUid) !== null && _b !== void 0 ? _b : query.uid) !== null && _c !== void 0 ? _c : "",
+                id: (_a = query.id) !== null && _a !== void 0 ? _a : "",
+                type: (_b = query.type) !== null && _b !== void 0 ? _b : "",
+                senderUid: (_c = query.senderUid) !== null && _c !== void 0 ? _c : "",
                 badge: (_d = query.badge) !== null && _d !== void 0 ? _d : "",
             },
             notification: {
                 title: (_e = query.title) !== null && _e !== void 0 ? _e : "",
-                body: query.body ? query.body : query.content ? query.content : "",
+                body: (_f = query.body) !== null && _f !== void 0 ? _f : "",
             },
             android: {
                 notification: {
@@ -544,8 +556,8 @@ class Messaging {
             res.notification.title = res.notification.title.substring(0, 64);
         }
         if (res.notification.body != "") {
-            res.notification.body = (_f = utils_1.Utils.removeHtmlTags(res.notification.body)) !== null && _f !== void 0 ? _f : "";
-            res.notification.body = (_g = utils_1.Utils.decodeHTMLEntities(res.notification.body)) !== null && _g !== void 0 ? _g : "";
+            res.notification.body = (_g = utils_1.Utils.removeHtmlTags(res.notification.body)) !== null && _g !== void 0 ? _g : "";
+            res.notification.body = (_h = utils_1.Utils.decodeHTMLEntities(res.notification.body)) !== null && _h !== void 0 ? _h : "";
             if (res.notification.body.length > 255) {
                 res.notification.body = res.notification.body.substring(0, 255);
             }
@@ -594,8 +606,17 @@ class Messaging {
         return { success: successCount, error: errorCount };
     }
     static async sendMessageToTopic(query) {
+        var _a;
         if (!query.topic)
             throw defines_1.ERROR_EMPTY_TOPIC;
+        // Only admin can sent message to default topic.
+        if (query.topic === Messaging.defaultTopic) {
+            const re = await user_1.User.isAdmin((_a = query.uid) !== null && _a !== void 0 ? _a : "");
+            if (re === false) {
+                throw defines_1.ERROR_YOU_ARE_NOT_ADMIN;
+            }
+        }
+        //
         const payload = this.topicPayload(query.topic, query);
         try {
             const res = await admin.messaging().send(payload);
@@ -624,16 +645,7 @@ class Messaging {
         if (!query.uids)
             throw defines_1.ERROR_EMPTY_UIDS;
         const payload = this.preMessagePayload(query);
-        let uids;
-        if (query.subscription) {
-            uids = (await this.removeUserHasSubscriptionOff(query.uids, "topic/chat/" + query.subscription)).join(",");
-        }
-        else {
-            uids = query.uids;
-        }
-        if (!uids)
-            return { success: 0, error: 0 };
-        const tokens = await this.getTokensFromUids(uids);
+        const tokens = await this.getTokensFromUids(query.uids);
         try {
             const res = await this.sendingMessageToTokens(tokens, payload);
             return res;
@@ -641,6 +653,15 @@ class Messaging {
         catch (e) {
             return { code: "error", message: e.message };
         }
+    }
+    static async sendMessageToChatUser(query) {
+        var _a;
+        const path = (_a = "topic/chat/chatNotify" + query.senderUid) !== null && _a !== void 0 ? _a : query.uid;
+        const uids = (await this.removeUserHasSubscriptionOff(query.uids, path)).join(",");
+        query.uids = uids;
+        if (!query.uids)
+            return { success: 0, error: 0 };
+        return this.sendMessageToUsers(query);
     }
     /**
      * Returns user-settings/{uid}/topic/type that is set to true.
