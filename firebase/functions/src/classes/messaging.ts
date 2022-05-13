@@ -713,9 +713,8 @@ export class Messaging {
   }
 
   static async sendMessageToChatUser(query: ChatRequestData) {
-    const uids = (
-      await this.removeUserHasSubscriptionOff(query.uids, "topic/chat/" + query.subscription)
-    ).join(",");
+    const path = "topic/chat/chatNotify" + query.senderUid ?? query.uid;
+    const uids = (await this.removeUserHasSubscriptionOff(query.uids, path)).join(",");
     query.uids = uids;
     if (!query.uids) return { success: 0, error: 0 };
     return this.sendMessageToUsers(query);

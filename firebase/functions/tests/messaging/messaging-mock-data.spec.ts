@@ -31,10 +31,10 @@ describe("Test Mock data", () => {
     try {
       const re = await Messaging.sendMessageToUsers({
         title: "Selrahc sent a message",
-        content: "sendMessageToUsers",
+        body: "sendMessageToUsers",
         uids: "wWyLWVufzYObiZeNIYCOQy4fQw02",
         badge: "16",
-        subscription: "chatNotifyMXhctaDjbtMKyWJO3C3fHA7sMnn1",
+        // subscription: "chatNotifyMXhctaDjbtMKyWJO3C3fHA7sMnn1",
         type: "chat",
         senderUid: "MXhctaDjbtMKyWJO3C3fHA7sMnn1",
       });
