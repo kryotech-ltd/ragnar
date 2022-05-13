@@ -93,5 +93,37 @@ describe("Post list test", () => {
     Comment.delete({ id: secondComment.id, uid: "test-uid" });
     Post.delete({ id: post.id!, uid: "test-uid" });
   });
+
+  it("test listing photo option", async () => {
+    const cat = await Test.createCategory();
+
+    // create test post without photo
+    const postA = await Post.create({
+      uid: "test-uid",
+      category: cat.id,
+      title: "test-title-x-" + Date.now(),
+    } as any);
+
+    // create test post with photo
+    const postB = await Post.create({
+      uid: "test-uid",
+      category: cat.id,
+      title: "test-title-x-" + Date.now(),
+      files: ["https://someimage.png", "https://someimage2.jpg"],
+    } as any);
+
+    // list all posts (will return all post by default)
+    const listA = await axios.post(endpoint, { category: cat.id, limit: 10, author: "N" });
+    expect(listA.data.length === 2).true;
+
+    // list posts with photo only
+    const listB = await axios.post(endpoint, { category: cat.id, limit: 10, author: "N", photo: "Y" });
+    expect(listB.data.length === 1).true;
+    expect(listB.data[0].id === postB.id).true;
+
+    // cleanup
+    Post.delete({ id: postA.id!, uid: "test-uid" });
+    Post.delete({ id: postB.id!, uid: "test-uid" });
+  });
 });
 
