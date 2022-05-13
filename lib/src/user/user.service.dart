@@ -48,6 +48,7 @@ class UserService with FirestoreMixin, DatabaseMixin {
   // DatabaseReference get _myDoc => FirebaseDatabase.instance.ref('users').child(uid);
 
   StreamSubscription? userSubscription;
+
   // StreamSubscription? messagingPermissionSubscription;
 
   /// This event will be posted whenever user document changes.
@@ -76,26 +77,26 @@ class UserService with FirestoreMixin, DatabaseMixin {
   /// So? Don't race on sign-out and sign-in.
   ///
   initAuthChanges() {
-    FirebaseAuth.instance.authStateChanges().listen(
-      (_user) async {
+    FirebaseAuth.instance.authStateChanges().distinct((p, n) => p?.uid == n?.uid).listen(
+      (firebaseUser) async {
         userSubscription?.cancel();
-        if (_user == null) {
+        if (firebaseUser == null) {
           user = UserModel();
           // debugPrint('User signed-out');
           changes.add(user);
         } else {
-          user = UserModel(uid: uid);
-          if (_user.isAnonymous) {
+          print('------> authStateChanged with uid: ${firebaseUser.uid}');
+          user = UserModel(uid: firebaseUser.uid);
+          if (firebaseUser.isAnonymous) {
             /// Note, anonymous sigin-in is not supported by fireflutter.
             // debugPrint(  'User sign-in as Anonymous; Warning! Fireflutter does not user anonymous account.');
             changes.add(user);
           } else {
-            final doc = userDoc(_user.uid);
+            final doc = userDoc(firebaseUser.uid);
 
             /// Put user uid first, and use the model.
-            user = UserModel(uid: uid);
-
-            await user.load();
+            user = UserModel(uid: firebaseUser.uid);
+            user = await user.load();
 
             /// Update last sign in stamp
             if (user.docExists) {
@@ -113,7 +114,7 @@ class UserService with FirestoreMixin, DatabaseMixin {
               /// if user doc does not exists, create one.
               if (event.snapshot.exists) {
                 /// User profile information has been updated.
-                user = UserModel.fromJson(event.snapshot.value, _user.uid);
+                user = UserModel.fromJson(event.snapshot.value, firebaseUser.uid);
                 changes.add(user);
 
                 /// This must be here. So, whenever user updates his profile, it will update also.

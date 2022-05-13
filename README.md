@@ -253,7 +253,12 @@ Table of contents
       ".read": true,
       ".indexOn": ["disabled", "profileReady"],
       "$uid": {
-        ".write": "$uid === auth.uid"
+        "registeredAt": {
+          ".write": "!data.exists()",
+        },
+        "$other": {
+          ".write": "$uid === auth.uid",
+        }
       }
     },
     "user-settings": {
@@ -291,6 +296,10 @@ Table of contents
     },
     "tests": {
       ".read": true,
+      ".write": true
+    },
+    "sign-in-token": {
+      ".read": false,
       ".write": true
     }
   }

@@ -57,11 +57,13 @@ class FunctionsApi {
 
       /// If the response is a string and begins with `ERROR_`, then it is an error.
       if (res.data is String && (res.data as String).startsWith('ERROR_')) {
+        logUrl(functionName, data);
         throw res.data;
       } else
 
       /// If the response is an Map(object) and has a non-empty value of `code` property, then it is considered as an error.
       if (res.data is Map && res.data['code'] != null && res.data['code'] != '') {
+        logUrl(functionName, data);
         throw res.data['code'];
       } else
 
@@ -69,6 +71,7 @@ class FunctionsApi {
       if (res.data is String &&
           (res.data as String).contains('code') &&
           (res.data as String).contains('ERR_')) {
+        logUrl(functionName, data);
         throw res.data;
       } else {
         /// success
@@ -80,6 +83,7 @@ class FunctionsApi {
         throw e.message;
       } else {
         /// Unknown error
+        logUrl(functionName, data);
         rethrow;
       }
     }

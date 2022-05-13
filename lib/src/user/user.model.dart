@@ -194,6 +194,8 @@ class UserModel with FirestoreMixin, DatabaseMixin {
     final re = data;
     re['uid'] = uid;
     re['isAdmin'] = isAdmin;
+    re['registeredAt'] = registeredAt;
+    re['updatedAt'] = updatedAt;
     return re;
   }
 
@@ -223,12 +225,19 @@ class UserModel with FirestoreMixin, DatabaseMixin {
 
   /// Load user data(information) into the member variables. See README for details.
   /// This is being invoked immediately after Firebase sign-in.
-  Future<void> load() async {
+  ///
+  /// ! Atttention - the app must save the return (user) value like below or unless it will produce error.
+  /// ```dart
+  ///   user = UserModel(uid: firebaseUser.uid);
+  ///   user = await user.load();
+  /// ```
+  Future<UserModel> load() async {
     final snapshot = await _userDoc.get();
-    final u = UserModel.fromJson(snapshot.value, uid);
-    if (u.docExists) {
-      copyWith(u);
-    }
+    return UserModel.fromJson(snapshot.value, uid);
+    // final u = UserModel.fromJson(snapshot.value, uid);
+    // if (u.docExists) {
+    //   copyWith(u);
+    // }
   }
 
   /// Copy user data from antoher user model.
