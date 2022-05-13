@@ -1,6 +1,8 @@
 /**
  * if [content] is 'Y', then it will return content. By default, it is 'Y'.
  * if [author] is 'Y', then it will return author's name, level, photoUrl. By default, it is 'Y'.
+ * if [photo] is 'Y', then it will return posts with photos only. By default, it is 'N'.
+ * if [lastComment] is 'Y', then it will add the last comment on the post if the posts have comment. By default, it is 'N'.
  */
 export interface PostListOptions {
   category?: string;
@@ -8,6 +10,8 @@ export interface PostListOptions {
   startAfter?: string;
   content?: "Y" | "N";
   author?: "Y" | "N";
+  photo?: "Y" | "N";
+  lastComment?: "Y" | "N";
 }
 
 export interface CategoryDocument {
@@ -52,6 +56,7 @@ export interface PostDocument {
   createdAt?: number;
   updatedAt?: number;
   point?: number;
+  lastComment?: CommentDocument;
   [key: string]: any;
 }
 
@@ -100,3 +105,4 @@ export interface CommentCreateRequirements {
   createdAt: number;
   updatedAt: number;
 }
+

@@ -68,8 +68,9 @@ export class Post {
       }
     }
 
-    if (posts.length && options.author !== "N") {
-      await this.addMetaOfAuthors(posts);
+    if (posts.length) {
+      if (options.author !== "N") await this.addMetaOfAuthors(posts);
+      if (options.lastComment === "Y") await this.addLastComments(posts);
     }
 
     return posts;
@@ -326,4 +327,30 @@ export class Post {
 
     return postOrComment;
   }
+
+  /**
+   * Adds the last comment for the post (if there is any).
+   *
+   * @param posts list of post document.
+   */
+  static async addLastComments(posts: PostDocument[]): Promise<void> {
+    const futures = posts.map((p) => this.addLastComment(p));
+    await Promise.all(futures);
+  }
+
+  /**
+   * Adds the last comment of a post if it exists.
+   *
+   * @param post post document.
+   * @returns returns comment or null if post have no comments.
+   */
+  static async addLastComment(post: PostDocument): Promise<CommentDocument | null> {
+    const snapshot = await Ref.commentCol.where("postId", "==", post.id).orderBy("createdAt").limit(1).get();
+    if (snapshot.empty) return null;
+    const comment = snapshot.docs[0].data() as CommentDocument;
+    comment.id = snapshot.docs[0].id;
+    post.lastComment = comment;
+    return post.lastComment;
+  }
 }
+

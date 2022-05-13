@@ -130,9 +130,9 @@ class Comment {
         const messageData = {
             title: post.title,
             body: data.content,
-            postId: data.postId,
+            id: data.postId,
             type: "post",
-            uid: data.uid,
+            senderUid: data.uid,
         };
         // console.log(messageData);
         const topic = "comments_" + post.category;

@@ -28,12 +28,12 @@ export interface SendMessageToTokensRequest extends SendMessageBaseRequest {
 }
 
 export interface SendMessageBaseRequest {
-  id?: string; /// postId
-  uid?: string; /// added by 'auth' in flutter.
+  id?: string; // / postId
+  uid?: string; // / added by 'auth' in flutter.
   title?: string;
-  body?: string; /// content
+  body?: string; // / content
   type?: string;
-  senderUid?: string; /// uid
+  senderUid?: string; // / uid
   badge?: string;
 }
 

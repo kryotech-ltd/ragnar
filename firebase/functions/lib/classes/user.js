@@ -54,20 +54,18 @@ class User {
         }
         return null;
     }
-    static async isAdmin(context) {
-        if (!context)
-            return false;
-        if (context.empty)
-            return false;
-        if (!context.auth)
-            return false;
-        if (!context.auth.uid)
+    /**
+     *
+     * @param uid
+     */
+    static async isAdmin(uid) {
+        if (!uid)
             return false;
         const doc = await ref_1.Ref.adminDoc.get();
         const admins = doc.data();
         if (!admins)
             return false;
-        if (!admins[context.auth.uid])
+        if (!admins[uid])
             return false;
         return true;
     }

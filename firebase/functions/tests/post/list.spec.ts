@@ -4,7 +4,10 @@ import { expect } from "chai";
 import { FirebaseAppInitializer } from "../firebase-app-initializer";
 import { Post } from "../../src/classes/post";
 
-// import { Test } from "../../src/classes/test";
+import { Test } from "../../src/classes/test";
+import { Comment } from "../../src/classes/comment";
+import { CommentDocument } from "../../src/interfaces/forum.interface";
+import { Utils } from "../../src/classes/utils";
 // import { CategoryDocument, PostDocument } from "../../src/interfaces/forum.interface";
 
 new FirebaseAppInitializer();
@@ -120,60 +123,109 @@ describe("Post list test", () => {
   //   expect(q3.length).equals(7);
   // });
 
-  it("test listing content option", async () => {
-    // Includes post content by default.
-    let re = await Post.list({
-      category: "qna",
-      limit: "1",
-    });
-    expect("content" in re[0] === true).true;
+  // it("test listing content option", async () => {
+  //   // Includes post content by default.
+  //   let re = await Post.list({
+  //     category: "qna",
+  //     limit: "1",
+  //   });
+  //   expect("content" in re[0] === true).true;
 
-    // Includes post'content.
-    re = await Post.list({
-      category: "qna",
-      limit: "1",
-      content: "Y",
-    });
-    expect("content" in re[0] === true).true;
+  //   // Includes post'content.
+  //   re = await Post.list({
+  //     category: "qna",
+  //     limit: "1",
+  //     content: "Y",
+  //   });
+  //   expect("content" in re[0] === true).true;
 
-    // Do not include post content.
-    re = await Post.list({
-      category: "qna",
-      limit: "1",
-      content: "N",
-    });
-    expect("content" in re[0] === false).true;
-  });
+  //   // Do not include post content.
+  //   re = await Post.list({
+  //     category: "qna",
+  //     limit: "1",
+  //     content: "N",
+  //   });
+  //   expect("content" in re[0] === false).true;
+  // });
 
-  it("test listing author option", async () => {
-    // Includes post content by default.
-    let re = await Post.list({
-      category: "qna",
-      limit: "1",
-    });
-    expect("author" in re[0]).true;
-    expect("authorLevel" in re[0]).true;
-    expect("authorPhotoUrl" in re[0]).true;
+  // it("test listing author option", async () => {
+  //   // Includes post content by default.
+  //   let re = await Post.list({
+  //     category: "qna",
+  //     limit: "1",
+  //   });
+  //   expect("author" in re[0]).true;
+  //   expect("authorLevel" in re[0]).true;
+  //   expect("authorPhotoUrl" in re[0]).true;
 
-    // Includes post'content.
-    re = await Post.list({
-      category: "qna",
-      limit: "1",
-      author: "Y",
-    });
-    expect("author" in re[0]).true;
-    expect("authorLevel" in re[0]).true;
-    expect("authorPhotoUrl" in re[0]).true;
+  //   // Includes post'content.
+  //   re = await Post.list({
+  //     category: "qna",
+  //     limit: "1",
+  //     author: "Y",
+  //   });
+  //   expect("author" in re[0]).true;
+  //   expect("authorLevel" in re[0]).true;
+  //   expect("authorPhotoUrl" in re[0]).true;
 
-    // Do not include post content.
-    re = await Post.list({
-      category: "qna",
+  //   // Do not include post content.
+  //   re = await Post.list({
+  //     category: "qna",
+  //     limit: "1",
+  //     author: "N",
+  //   });
+  //   expect("author" in re[0]).false;
+  //   expect("authorLevel" in re[0]).false;
+  //   expect("authorPhotoUrl" in re[0]).false;
+  // });
+
+  it("test listing lastComment option", async () => {
+    // create test post with comment
+    const cat = await Test.createCategory();
+    const post = await Post.create({
+      uid: "test-uid",
+      category: cat.id,
+      title: "test-title-x-" + Date.now(),
+    } as any);
+
+    /// create 2 comments
+    await Comment.create({
+      postId: post.id,
+      parentId: post.id,
+      content: "first comment",
+    } as CommentDocument);
+    await Utils.delay(1000);
+
+    const secondComment = await Comment.create({
+      postId: post.id,
+      parentId: post.id,
+      content: "second comment",
+    } as CommentDocument);
+    await Utils.delay(1000);
+
+    // get list
+    // By default no last comment.
+    const listA = await Post.list({
+      category: cat.id,
       limit: "1",
       author: "N",
     });
-    expect("author" in re[0]).false;
-    expect("authorLevel" in re[0]).false;
-    expect("authorPhotoUrl" in re[0]).false;
+
+    // There should be no last comment property.
+    expect("lastComment" in listA[0]).false;
+
+    // Get last comment
+    const re = await Post.list({
+      category: cat.id,
+      limit: "1",
+      author: "N",
+      lastComment: "Y",
+    });
+
+    // There should be last comment property.
+    expect("lastComment" in listA[0]).true;
+    // Last comment should be the same as the second created comment.
+    expect(listA[0].lastComment.id === secondComment.id).true;
   });
 });
 
