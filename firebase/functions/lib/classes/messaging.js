@@ -655,7 +655,9 @@ class Messaging {
         }
     }
     static async sendMessageToChatUser(query) {
-        const uids = (await this.removeUserHasSubscriptionOff(query.uids, "topic/chat/" + query.subscription)).join(",");
+        var _a;
+        const path = (_a = "topic/chat/chatNotify" + query.senderUid) !== null && _a !== void 0 ? _a : query.uid;
+        const uids = (await this.removeUserHasSubscriptionOff(query.uids, path)).join(",");
         query.uids = uids;
         if (!query.uids)
             return { success: 0, error: 0 };
