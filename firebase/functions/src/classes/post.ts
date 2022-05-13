@@ -45,6 +45,10 @@ export class Post {
       q = q.where("category", "==", options.category);
     }
 
+    if (options.photo === "Y") {
+      q = q.where("hasPhoto", "==", true);
+    }
+
     q = q.orderBy("createdAt", "desc");
 
     if (options.startAfter) {
