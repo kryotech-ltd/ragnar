@@ -6,9 +6,8 @@ import { Post } from "../../src/classes/post";
 
 import { Test } from "../../src/classes/test";
 import { Comment } from "../../src/classes/comment";
-import { CommentDocument } from "../../src/interfaces/forum.interface";
+import { CommentDocument, CategoryDocument, PostDocument } from "../../src/interfaces/forum.interface";
 import { Utils } from "../../src/classes/utils";
-import { CategoryDocument, PostDocument } from "../../src/interfaces/forum.interface";
 
 new FirebaseAppInitializer();
 
@@ -39,9 +38,9 @@ describe("Post list test", () => {
     // console.log(totalPosts[0]);
     for (let i = 0; i <= 3; i++) {
       expect(totalPosts[i])
-        .to.be.an("object")
-        .to.have.property("title")
-        .equals("test-title-" + (10 - i));
+          .to.be.an("object")
+          .to.have.property("title")
+          .equals("test-title-" + (10 - i));
     }
   });
 
@@ -52,9 +51,9 @@ describe("Post list test", () => {
     });
     for (let i = 0; i <= 3; i++) {
       expect(posts[i])
-        .to.be.an("object")
-        .to.have.property("title")
-        .equals("test-title-" + (6 - i));
+          .to.be.an("object")
+          .to.have.property("title")
+          .equals("test-title-" + (6 - i));
     }
     totalPosts = [...totalPosts, ...posts];
   });
