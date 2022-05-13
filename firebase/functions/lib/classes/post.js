@@ -48,8 +48,11 @@ class Post {
                 posts.push(post);
             }
         }
-        if (posts.length && options.author !== "N") {
-            await this.addMetaOfAuthors(posts);
+        if (posts.length) {
+            if (options.author !== "N")
+                await this.addMetaOfAuthors(posts);
+            if (options.lastComment === "Y")
+                await this.addLastComments(posts);
         }
         return posts;
     }
@@ -287,6 +290,30 @@ class Post {
             postOrComment.authorPhotoUrl = (_d = userData === null || userData === void 0 ? void 0 : userData.photoUrl) !== null && _d !== void 0 ? _d : "";
         }
         return postOrComment;
+    }
+    /**
+     * Adds the last comment for the post (if there is any).
+     *
+     * @param posts list of post document.
+     */
+    static async addLastComments(posts) {
+        const futures = posts.map((p) => this.addLastComment(p));
+        await Promise.all(futures);
+    }
+    /**
+     * Adds the last comment of a post if it exists.
+     *
+     * @param post post document.
+     * @returns returns comment or null if post have no comments.
+     */
+    static async addLastComment(post) {
+        const snapshot = await ref_1.Ref.commentCol.where("postId", "==", post.id).orderBy("createdAt", "desc").limit(1).get();
+        if (snapshot.empty)
+            return null;
+        const comment = snapshot.docs[0].data();
+        comment.id = snapshot.docs[0].id;
+        post.lastComment = comment;
+        return comment;
     }
 }
 exports.Post = Post;

@@ -345,12 +345,12 @@ export class Post {
    * @returns returns comment or null if post have no comments.
    */
   static async addLastComment(post: PostDocument): Promise<CommentDocument | null> {
-    const snapshot = await Ref.commentCol.where("postId", "==", post.id).orderBy("createdAt").limit(1).get();
+    const snapshot = await Ref.commentCol.where("postId", "==", post.id).orderBy("createdAt", "desc").limit(1).get();
     if (snapshot.empty) return null;
     const comment = snapshot.docs[0].data() as CommentDocument;
     comment.id = snapshot.docs[0].id;
     post.lastComment = comment;
-    return post.lastComment;
+    return comment;
   }
 }
 

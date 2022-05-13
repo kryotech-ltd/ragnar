@@ -188,8 +188,9 @@ describe("Post list test", () => {
       title: "test-title-x-" + Date.now(),
     } as any);
 
-    /// create 2 comments
-    await Comment.create({
+    // create 2 comments
+    const firstComment = await Comment.create({
+      uid: "test-uid",
       postId: post.id,
       parentId: post.id,
       content: "first comment",
@@ -197,6 +198,7 @@ describe("Post list test", () => {
     await Utils.delay(1000);
 
     const secondComment = await Comment.create({
+      uid: "test-uid",
       postId: post.id,
       parentId: post.id,
       content: "second comment",
@@ -215,7 +217,7 @@ describe("Post list test", () => {
     expect("lastComment" in listA[0]).false;
 
     // Get last comment
-    const re = await Post.list({
+    const listB = await Post.list({
       category: cat.id,
       limit: "1",
       author: "N",
@@ -223,9 +225,14 @@ describe("Post list test", () => {
     });
 
     // There should be last comment property.
-    expect("lastComment" in listA[0]).true;
+    expect("lastComment" in listB[0]).true;
     // Last comment should be the same as the second created comment.
-    expect(listA[0].lastComment.id === secondComment.id).true;
+    expect(listB[0].lastComment?.id === secondComment.id).true;
+
+    // / cleanup
+    Comment.delete({ id: firstComment.id, uid: "test-uid" });
+    Comment.delete({ id: secondComment.id, uid: "test-uid" });
+    Post.delete({ id: post.id!, uid: "test-uid" });
   });
 });
 
