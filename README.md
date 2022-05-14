@@ -566,6 +566,25 @@ TextButton(
 
 - Note that, If the app knows only user's uid, then it can create user model and use some of the user model's methods.
 
+- Note, when user sign-in for the first time, `{ registeredAt, updatedAt, profileReady }` will be set at `/users/<uid>` in realtime database by cloud function.
+  - Then, ( or before function create profile document ), the app will updaet `{ lastSignInAt }` in `UserService`.
+
+- `UserModel.load()` tries to load user document at `/users<uid>` that may or may not have `{ registeredAt, updatedAt, profileReady }` since this data is set asynchronously.
+  - So, for the very first time when the user signs-in, it is not easy to determin whether the user has `registeredAt` field in 1 seconds. But the `registeredAt` will surely be avaiable after a second.
+  - Why `registeredAt` is important? because it is being used as part of password. For this matter, users' uids never be seen by users.
+
+- Note, `registeredAt` is set to unchangable by the security rule.
+- Note, for the very first time when user signs-in, 
+
+  /// Load user data(information) into the member variables. See README for details.
+  /// This is being invoked immediately after Firebase sign-in.
+  ///
+  /// ! Atttention - the app must save the return (user) value like below or unless it will produce error.
+  /// ```dart
+  ///   user = UserModel(uid: firebaseUser.uid);
+  ///   user = await user.load();
+  /// ```
+
 ```dart
 /// Put user uid on UserModel, and the app can use the model's member methods already.
 user = UserModel(uid: uid);

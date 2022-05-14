@@ -96,14 +96,11 @@ class UserService with FirestoreMixin, DatabaseMixin {
 
             /// Put user uid first, and use the model.
             user = UserModel(uid: firebaseUser.uid);
-            user = await user.load();
 
-            /// Update last sign in stamp
-            if (user.docExists) {
-              user.updateLastSignInAt();
-            } else {
-              await user.create();
-            }
+            await user.updateLastSignInAt();
+
+            /// See README. user.load()
+            user = await user.load();
 
             /// Post [signIn] event, after user sign in and load information from realtime database.
             signIn.add(user);

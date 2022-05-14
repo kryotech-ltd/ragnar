@@ -1,6 +1,5 @@
 import * as functions from "firebase-functions";
 import { Point } from "../classes/point";
-import { User } from "../classes/user";
 import { ready } from "../ready";
 
 /**
@@ -14,12 +13,12 @@ import { ready } from "../ready";
  * % pointEventSignIn({after: {lastLogin: 1234}}, {params: {uid: 'a'}})
  */
 export const pointEventSignIn = functions
-  .region("asia-northeast3")
-  .database.ref("/users/{uid}/lastSignInAt")
-  .onUpdate(async (change, context) => {
-    await Point.signInPoint(change.after.val(), context);
-    return Point.registerPoint(change.after.val(), context);
-  });
+    .region("asia-northeast3")
+    .database.ref("/users/{uid}/lastSignInAt")
+    .onUpdate(async (change, context) => {
+      await Point.signInPoint(change.after.val(), context);
+      return Point.registerPoint(change.after.val(), context);
+    });
 
 /**
  * Listens for a new user to be register(created) at /users/:uid and do point event.
@@ -30,15 +29,11 @@ export const pointEventSignIn = functions
  * % pointEventRegister({}, {params: {uid: 'a'}})
  */
 export const pointEventRegister = functions
-  .region("asia-northeast3")
-  .database.ref("/users/{uid}")
-  .onCreate((snapshot, context) => {
-    const futures = [
-      User.create(context.params.uid, {}),
-      Point.registerPoint(snapshot.val(), context),
-    ];
-    return Promise.all(futures);
-  });
+    .region("asia-northeast3")
+    .database.ref("/users/{uid}")
+    .onCreate((snapshot, context) => {
+      return Point.registerPoint(snapshot.val(), context);
+    });
 
 /**
  * Listens for a user sign in and do point event.
@@ -63,9 +58,9 @@ export const pointEventRegister = functions
 //     });
 
 export const pointHistory = functions
-  .region("us-central1", "asia-northeast3")
-  .https.onRequest((req, res) => {
-    ready({ req, res, auth: true }, async (data) => {
-      res.status(200).send(await Point.history(data));
+    .region("us-central1", "asia-northeast3")
+    .https.onRequest((req, res) => {
+      ready({ req, res, auth: true }, async (data) => {
+        res.status(200).send(await Point.history(data));
+      });
     });
-  });

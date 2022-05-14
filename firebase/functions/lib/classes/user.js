@@ -11,10 +11,16 @@ class User {
     static get auth() {
         return admin.auth();
     }
+    /**
+     * Update (Not create or set) the profile document.
+     * @param uid uid of the user
+     * @param data data to update as the user profile
+     */
     static async create(uid, data) {
         data.updatedAt = utils_1.Utils.getTimestamp();
         data.registeredAt = utils_1.Utils.getTimestamp();
-        return ref_1.Ref.userDoc(uid).set(data);
+        data.profileReady = 90000000000000;
+        return ref_1.Ref.userDoc(uid).update(data);
     }
     /**
      * Authenticates user with id and password.

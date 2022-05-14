@@ -207,14 +207,14 @@ class UserModel with FirestoreMixin, DatabaseMixin {
   /// Creates user document.
   ///
   /// Note, `update()` will create document if it's not existing.
-  Future<void> create() {
-    return _userDoc.update({
-      'registeredAt': ServerValue.timestamp,
-      'updatedAt': ServerValue.timestamp,
-      'profileReady': profileReadyMax,
-      'lastSignInAt': ServerValue.timestamp,
-    });
-  }
+  // Future<void> create() {
+  //   return _userDoc.update({
+  //     'registeredAt': ServerValue.timestamp,
+  //     'updatedAt': ServerValue.timestamp,
+  //     'profileReady': profileReadyMax,
+  //     'lastSignInAt': ServerValue.timestamp,
+  //   });
+  // }
 
   /// Update last sign in stamp
   Future<void> updateLastSignInAt() {
@@ -223,14 +223,7 @@ class UserModel with FirestoreMixin, DatabaseMixin {
     });
   }
 
-  /// Load user data(information) into the member variables. See README for details.
-  /// This is being invoked immediately after Firebase sign-in.
-  ///
-  /// ! Atttention - the app must save the return (user) value like below or unless it will produce error.
-  /// ```dart
-  ///   user = UserModel(uid: firebaseUser.uid);
-  ///   user = await user.load();
-  /// ```
+  /// See readme for details.
   Future<UserModel> load() async {
     final snapshot = await _userDoc.get();
     return UserModel.fromJson(snapshot.value, uid);

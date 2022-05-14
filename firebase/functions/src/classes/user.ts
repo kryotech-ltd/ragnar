@@ -22,11 +22,17 @@ export class User {
     return admin.auth();
   }
 
+  /**
+   * Update (Not create or set) the profile document.
+   * @param uid uid of the user
+   * @param data data to update as the user profile
+   */
   static async create(uid: string, data: UserCreate) {
     data.updatedAt = Utils.getTimestamp();
     data.registeredAt = Utils.getTimestamp();
+    data.profileReady = 90000000000000;
 
-    return Ref.userDoc(uid).set(data);
+    return Ref.userDoc(uid).update(data);
   }
   /**
    * Authenticates user with id and password.
