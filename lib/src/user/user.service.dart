@@ -85,7 +85,7 @@ class UserService with FirestoreMixin, DatabaseMixin {
           // debugPrint('User signed-out');
           changes.add(user);
         } else {
-          print('------> authStateChanged with uid: ${firebaseUser.uid}');
+          // print('------> authStateChanged with uid: ${firebaseUser.uid}');
           user = UserModel(uid: firebaseUser.uid);
           if (firebaseUser.isAnonymous) {
             /// Note, anonymous sigin-in is not supported by fireflutter.

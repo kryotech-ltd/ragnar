@@ -608,9 +608,12 @@ final user = UserModel(uid: '... uid ...')..load();
 ## User setting service
 
 - User settings are saved under `/user-settings/<uid>` in realtime database.
-- `UserSettinService` is handling the update of user setting.
-- `UserSettinService.instance.changes` event is posted whenever user's setting is changed.
-- `UserSettinService` is used in many places.
+  - Public user profile data is saved under `/users`, and private user data is saved under `/user-settings`.
+- `UserSettingService` is handling the update of user setting.
+- When `UserSettingService.instance` is accessed for the first time, it listens to the change of `/user-settings/<uid>` and,
+  - `UserSettingService.instance.changes` event is posted whenever user's setting is changed.
+  - The app may call `UserSettingService.instance.init()` on `main` for initialization on the app booting.
+- `UserSettingService` is used in many places.
   - It` is connected to `UserModel.settings`.
   - It has methods for handling push notification topics.
 - Best way to use it
@@ -640,8 +643,12 @@ UserSettingDoc(
 
 ### UserService and password
 
-- When user signs in, the UserService will load user password at `/user-private-settings/password/<uid>`.
+- When user signs in, the UserService will load user password at `/user-settings/<uid>/password`.
+  - The password is not part of user profile data. It is saved under `/user-settings`, So, it is dealt with `UserSettingService`.
   - If the password does not exists, then it will create one.
+- To get password,
+  - Do - `user.settings.value('password')`. This may not be updated when user password has changed.
+  - Or do - `UserSettingDoc(builder: (setting) => Text('Password: ${setting.password}'))`. This will update if user settings (including password) changes.
 
 - `FunctionsApi` will use this password as the sign-in user's identity.
   - Then cloud function will get the password from database and compares it.

@@ -472,9 +472,10 @@ class _EmailButtonState extends State<EmailButton> {
 
     /// reload and check if verified
     FirebaseAuth.instance.currentUser!.reload().then((value) {
-      setState(() {
-        verified = FirebaseAuth.instance.currentUser!.emailVerified;
-      });
+      if (mounted)
+        setState(() {
+          verified = FirebaseAuth.instance.currentUser!.emailVerified;
+        });
     });
   }
 

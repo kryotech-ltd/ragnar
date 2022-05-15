@@ -133,7 +133,7 @@ class MessagingService with FirestoreMixin, DatabaseMixin {
     subscribeToDefaultTopic();
 
     if (UserService.instance.user.loaded == false) return;
-    print('---> _updateToken(); $token, ${UserService.instance.user}');
+    // print('---> _updateToken(); $token, ${UserService.instance.user}');
     FunctionsApi.instance.request('updateToken', data: {'token': token}, addAuth: true);
   }
 

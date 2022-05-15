@@ -8,14 +8,17 @@ class UserSettingsModel with DatabaseMixin {
   UserSettingsModel({
     required this.topics,
     required this.data,
+    required this.password,
   });
 
   Map<String, dynamic> topics;
   Map<String, dynamic> data;
+  final String password;
   factory UserSettingsModel.fromJson(dynamic data) {
     return UserSettingsModel(
       topics: Map<String, dynamic>.from(data['topic'] ?? {}),
       data: Map<String, dynamic>.from(data),
+      password: data['password'] ?? '',
     );
   }
 
@@ -28,11 +31,34 @@ class UserSettingsModel with DatabaseMixin {
   }
 
   factory UserSettingsModel.empty() {
-    return UserSettingsModel(topics: {}, data: {});
+    return UserSettingsModel(topics: {}, data: {}, password: '');
   }
 
-  Future<void> create() {
-    return userSettingsDoc.set({'timestamp': ServerValue.timestamp});
+  /// Create user-setting document for the first time with time and password.
+  Future<UserSettingsModel> create() async {
+    await userSettingsDoc.set({
+      'timestamp': ServerValue.timestamp,
+      'password': getRandomString(),
+    });
+    return this.get();
+  }
+
+  /// Generate new password for the user.
+  ///
+  /// Note, this should be called only if the user has no password, yet.
+  Future<void> generatePassword() {
+    return userSettingsDoc.update({
+      'password': getRandomString(),
+    });
+  }
+
+  Future<UserSettingsModel> get() async {
+    final snapshot = await userSettingsDoc.get();
+    if (snapshot.exists) {
+      return UserSettingsModel.fromJson(snapshot.value);
+    } else {
+      return UserSettingsModel.empty();
+    }
   }
 
   /// Update user setting

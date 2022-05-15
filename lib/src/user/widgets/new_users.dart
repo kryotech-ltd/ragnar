@@ -29,7 +29,7 @@ class NewUsers extends StatelessWidget with DatabaseMixin {
             itemBuilder: (context, index) {
               final user = users[index];
 
-              print('user; $user');
+              // print('user; $user');
 
               return UserProfilePhoto(
                 key: ValueKey(user.uid),
