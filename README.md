@@ -38,8 +38,10 @@ Table of contents
   - [User installation](#user-installation)
   - [User data and user profile](#user-data-and-user-profile)
   - [UserModel](#usermodel)
+    - [UserModel.load()](#usermodelload)
   - [UserService](#userservice)
   - [User setting service](#user-setting-service)
+    - [UserService and password](#userservice-and-password)
     - [SettingBox](#settingbox)
   - [Profile ready](#profile-ready)
   - [Phone number sign-in](#phone-number-sign-in)
@@ -564,27 +566,22 @@ TextButton(
 ## UserModel
 
 
-- Note that, If the app knows only user's uid, then it can create user model and use some of the user model's methods.
+- Note that, If the app knows only user's uid, then it can create user model (Not user docuemnt) and use some of the user model's methods.
 
-- Note, when user sign-in for the first time, `{ registeredAt, updatedAt, profileReady }` will be set at `/users/<uid>` in realtime database by cloud function.
-  - Then, ( or before function create profile document ), the app will updaet `{ lastSignInAt }` in `UserService`.
+- Note, when user sign-in for the first time, `{ registeredAt, updatedAt, profileReady }` will be set at `/users/<uid>` in realtime database by cloud function. This is called `user-doc-init-by-function`.
+  - So, it's important to know that when user signs in for the first time, the app may want to update `lastSignIn` on user's profile document and load it. But the `registeredAt` may be 0. This is because `registeredAt` is set by cloud function asynchronously.
+    - What if the app update's `profileReady` to different value (this may happen on testing) immediately after user signs in, and later `user-doc-init-by-function` happens? That's right, `profileReady` may be reset in this case. But normal use case, this won't happen.
 
-- `UserModel.load()` tries to load user document at `/users<uid>` that may or may not have `{ registeredAt, updatedAt, profileReady }` since this data is set asynchronously.
-  - So, for the very first time when the user signs-in, it is not easy to determin whether the user has `registeredAt` field in 1 seconds. But the `registeredAt` will surely be avaiable after a second.
-  - Why `registeredAt` is important? because it is being used as part of password. For this matter, users' uids never be seen by users.
+- When user signs-in for the first time, `UserModel.load()` will be called immediately after sign-in and the loaded user document may not have proper data on `{ registeredAt, updatedAt, profileReady }` since `user-doc-init-by-function` will happen a bit late. This is simply fine.
 
-- Note, `registeredAt` is set to unchangable by the security rule.
-- Note, for the very first time when user signs-in, 
 
-  /// Load user data(information) into the member variables. See README for details.
-  /// This is being invoked immediately after Firebase sign-in.
-  ///
-  /// ! Atttention - the app must save the return (user) value like below or unless it will produce error.
-  /// ```dart
-  ///   user = UserModel(uid: firebaseUser.uid);
-  ///   user = await user.load();
-  /// ```
+### UserModel.load()
 
+- This loads user data(information) into the its member variables.
+  - This is being invoked immediately after user sign-in Firebase Auth.
+- The return value must be set to `user` member variable of the user service, Unless it would produce unexpected error.
+
+- Example of code in `UserService`
 ```dart
 /// Put user uid on UserModel, and the app can use the model's member methods already.
 user = UserModel(uid: uid);
@@ -593,7 +590,7 @@ user = UserModel(uid: uid);
 user.updateLastSignInAt();
 
 /// Load user data and set it into member variables.
-await user.load();
+user = await user.load();
 
 /// Print user properties.
 print(user);
@@ -609,7 +606,6 @@ final user = UserModel(uid: '... uid ...')..load();
 
 
 ## User setting service
-
 
 - User settings are saved under `/user-settings/<uid>` in realtime database.
 - `UserSettinService` is handling the update of user setting.
@@ -641,6 +637,15 @@ UserSettingDoc(
   },
 )
 ```
+
+### UserService and password
+
+- When user signs in, the UserService will load user password at `/user-private-settings/password/<uid>`.
+  - If the password does not exists, then it will create one.
+
+- `FunctionsApi` will use this password as the sign-in user's identity.
+  - Then cloud function will get the password from database and compares it.
+
 
 
 ### SettingBox

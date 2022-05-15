@@ -39,6 +39,12 @@ dependency_overrides:
   font_awesome_flutter:
     path: ./lib/packages/font_awesome_flutter
 
+  cached_network_image:
+    git:
+      url: https://github.com/XuannThucc/flutter_cached_network_image.git
+      path: cached_network_image
+      ref: ff72f00f142f13d889d7549e013af91cb0b523ab
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

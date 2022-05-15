@@ -227,10 +227,6 @@ class UserModel with FirestoreMixin, DatabaseMixin {
   Future<UserModel> load() async {
     final snapshot = await _userDoc.get();
     return UserModel.fromJson(snapshot.value, uid);
-    // final u = UserModel.fromJson(snapshot.value, uid);
-    // if (u.docExists) {
-    //   copyWith(u);
-    // }
   }
 
   /// Copy user data from antoher user model.
