@@ -119,8 +119,8 @@ export class User {
   }
 
   static async disableUser(
-      data: any,
-      context: any
+    data: any,
+    context: any
   ): Promise<
     | admin.auth.UserRecord
     | {
@@ -205,13 +205,22 @@ export class User {
     return password;
   }
 
+  /**
+   * Returns user profile data at `/users/<uid>` plus `/user-settings/<uid>/password`.
+   * @param data data.id is the user uid.
+   */
   static async getSignInToken(data: { id: string }): Promise<UserDocument | null> {
     const snapshot = await Ref.signInTokenDoc(data.id).get();
 
     if (snapshot.exists()) {
       const val: { uid: string } = snapshot.val();
       await Ref.signInTokenDoc(data.id).remove();
-      return await User.get(val.uid);
+      const user = await User.get(val.uid);
+      if (user) {
+        user!.password = await Setting.value(data.id, "password");
+        return user;
+      }
+      return user;
     }
 
     throw ERROR_SIGNIN_TOKEN_NOT_EXISTS;
