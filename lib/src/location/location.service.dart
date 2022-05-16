@@ -62,6 +62,7 @@ class LocationService {
   Future<Position> get currentPosition async {
     await checkPermission();
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      desiredAccuracy: LocationAccuracy.high,
+    );
   }
 }

@@ -73,7 +73,9 @@ class MessagingService with FirestoreMixin, DatabaseMixin {
     /// Update token only after the app gets user information. NOT immediately after user sign-in.
     UserService.instance.signIn.listen((user) {
       if (user.loaded) {
-        _updateToken();
+        /// Give some time (1.5 second delay) for the app to do some initialization.
+        /// For instance, the app will generate password for the first time when user sign-in.
+        Timer(Duration(milliseconds: 1500), _updateToken);
       }
     });
 

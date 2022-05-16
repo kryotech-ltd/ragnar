@@ -1974,7 +1974,20 @@ QuickMenuCategories(
 
 # Location Service
 
+- `LocationService` provides the uesr's location information.
 - Use this service to get current location positoin.
+- When `LocationService.instance.currentPosition` is being called, it will check the permission automatically.
+  - So, use `currentPosition` to get the user's current latitude and longitude and the permission check will be done automatically.
+```dart
+final position = await LocationService.instance.currentPosition;
+controller.animateCamera(
+  CameraUpdate.newCameraPosition(
+    CameraPosition(
+      target: LatLng(position.latitude, position.longitude),
+    ),
+  ),
+);
+```
 
 # Cloud Functions
 

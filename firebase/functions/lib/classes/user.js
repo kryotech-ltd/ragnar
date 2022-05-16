@@ -37,7 +37,7 @@ class User {
         else if (!data.password && !data.password2) {
             return defines_1.ERROR_EMPTY_PASSWORD;
         }
-        console.log("data; ", data);
+        // console.log("data; ", data);
         // Check if user exists.
         const user = await this.get(data.uid);
         if (user === null) {
@@ -52,7 +52,7 @@ class User {
         }
         else {
             const passwordDb = await setting_1.Setting.value(data.uid, "password");
-            console.log("passwordDb; ", passwordDb);
+            // console.log("passwordDb; ", passwordDb);
             return data.password2 == passwordDb ? "" : defines_1.ERROR_WRONG_PASSWORD;
         }
     }
