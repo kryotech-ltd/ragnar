@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
-import 'package:fireflutter/src/user/user.setting.service.dart';
 import '../fireflutter.dart';
 
 /// FunctionsApi
