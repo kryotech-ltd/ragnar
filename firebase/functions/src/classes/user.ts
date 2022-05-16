@@ -119,8 +119,8 @@ export class User {
   }
 
   static async disableUser(
-      data: any,
-      context: any
+    data: any,
+    context: any
   ): Promise<
     | admin.auth.UserRecord
     | {
@@ -217,8 +217,8 @@ export class User {
       await Ref.signInTokenDoc(data.id).remove();
       const user = await User.get(val.uid);
       if (user) {
-        user!.password = await Setting.value(data.id, "password");
-        return user;
+        const password = await Setting.value(user.id, "password");
+        user!.password = password;
       }
       return user;
     }

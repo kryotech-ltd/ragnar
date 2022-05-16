@@ -188,10 +188,13 @@ class User {
             const val = snapshot.val();
             await ref_1.Ref.signInTokenDoc(data.id).remove();
             const user = await User.get(val.uid);
+            console.log("user (1); ", user);
             if (user) {
-                user.password = await setting_1.Setting.value(data.id, "password");
-                return user;
+                const password = await setting_1.Setting.value(user.id, "password");
+                console.log("password; ", password);
+                user.password = password;
             }
+            console.log("user (2); ", user);
             return user;
         }
         throw defines_1.ERROR_SIGNIN_TOKEN_NOT_EXISTS;
