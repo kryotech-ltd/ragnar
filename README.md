@@ -654,6 +654,7 @@ UserSettingDoc(
   - Then cloud function will get the password from database and compares it.
 
 
+- See `<root>/firebase/functions/tests/user/auth.spec.ts` for test.
 
 ### SettingBox
 

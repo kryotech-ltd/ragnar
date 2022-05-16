@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 /**
  * @file utils.ts
  */
@@ -25,6 +27,11 @@ export class Utils {
   static getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  static uuid() {
+    return uuidv4();
+  }
+
   /**
    * Wait for milliseconds.
    *

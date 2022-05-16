@@ -14,6 +14,7 @@ import { UserCreate, UserDocument } from "../interfaces/user.interface";
 import { Ref } from "./ref";
 import { Utils } from "./utils";
 import * as admin from "firebase-admin";
+import { Setting } from "./setting";
 // import { GetUsersResult } from "firebase-admin/lib/auth/base-auth";
 // import { ErrorCodeMessage } from "../interfaces/common.interface";
 
@@ -38,20 +39,35 @@ export class User {
    * Authenticates user with id and password.
    * @param data input data that has uid and password
    * @returns Error string on error(not throwing as an exception). Empty string on success.
+   *
+   * ! `data.password` uses user's `registeredAt`. And this will be removed on Jul.
    */
-  static async authenticate(data: { uid: string; password: string }): Promise<string> {
+  static async authenticate(data: {
+    uid: string;
+    password?: string;
+    password2?: string;
+  }): Promise<string> {
     if (!data.uid) {
       return ERROR_EMPTY_UID;
-    } else if (!data.password) {
+    } else if (!data.password && !data.password2) {
       return ERROR_EMPTY_PASSWORD;
-    } else {
-      const user = await this.get(data.uid);
-      if (user === null) {
-        return ERROR_USER_NOT_FOUND;
-      }
+    }
+
+    // console.log("data; ", data);
+    // Check if user exists.
+    const user = await this.get(data.uid);
+    if (user === null) {
+      return ERROR_USER_NOT_FOUND;
+    }
+
+    if (data.password) {
       const password = this.generatePassword(user);
       if (password === data.password) return "";
       else return ERROR_WRONG_PASSWORD;
+    } else {
+      const passwordDb = await Setting.value(data.uid, "password");
+      // console.log("passwordDb; ", passwordDb);
+      return data.password2 == passwordDb ? "" : ERROR_WRONG_PASSWORD;
     }
   }
 
@@ -103,8 +119,8 @@ export class User {
   }
 
   static async disableUser(
-      data: any,
-      context: any
+    data: any,
+    context: any
   ): Promise<
     | admin.auth.UserRecord
     | {
@@ -177,6 +193,16 @@ export class User {
    */
   static generatePassword(doc: UserDocument): string {
     return doc.id + "-" + doc.registeredAt;
+  }
+
+  /**
+   * Generate and save new password under `/user-setting/<uid>/password` and return it.
+   * @param uid the user's uid
+   */
+  static async generateNewPassword(uid: string): Promise<string> {
+    const password = Utils.uuid();
+    await Ref.userSettings(uid).set({ password: password });
+    return password;
   }
 
   static async getSignInToken(data: { id: string }): Promise<UserDocument | null> {

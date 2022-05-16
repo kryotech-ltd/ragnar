@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Utils = void 0;
+const uuid_1 = require("uuid");
 /**
  * @file utils.ts
  */
@@ -27,6 +28,9 @@ class Utils {
      */
     static getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    static uuid() {
+        return uuid_1.v4();
     }
     /**
      * Wait for milliseconds.

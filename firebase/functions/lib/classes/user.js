@@ -5,6 +5,7 @@ const defines_1 = require("../defines");
 const ref_1 = require("./ref");
 const utils_1 = require("./utils");
 const admin = require("firebase-admin");
+const setting_1 = require("./setting");
 // import { GetUsersResult } from "firebase-admin/lib/auth/base-auth";
 // import { ErrorCodeMessage } from "../interfaces/common.interface";
 class User {
@@ -26,24 +27,33 @@ class User {
      * Authenticates user with id and password.
      * @param data input data that has uid and password
      * @returns Error string on error(not throwing as an exception). Empty string on success.
+     *
+     * ! `data.password` uses user's `registeredAt`. And this will be removed on Jul.
      */
     static async authenticate(data) {
         if (!data.uid) {
             return defines_1.ERROR_EMPTY_UID;
         }
-        else if (!data.password) {
+        else if (!data.password && !data.password2) {
             return defines_1.ERROR_EMPTY_PASSWORD;
         }
-        else {
-            const user = await this.get(data.uid);
-            if (user === null) {
-                return defines_1.ERROR_USER_NOT_FOUND;
-            }
+        console.log("data; ", data);
+        // Check if user exists.
+        const user = await this.get(data.uid);
+        if (user === null) {
+            return defines_1.ERROR_USER_NOT_FOUND;
+        }
+        if (data.password) {
             const password = this.generatePassword(user);
             if (password === data.password)
                 return "";
             else
                 return defines_1.ERROR_WRONG_PASSWORD;
+        }
+        else {
+            const passwordDb = await setting_1.Setting.value(data.uid, "password");
+            console.log("passwordDb; ", passwordDb);
+            return data.password2 == passwordDb ? "" : defines_1.ERROR_WRONG_PASSWORD;
         }
     }
     /**
@@ -158,6 +168,15 @@ class User {
      */
     static generatePassword(doc) {
         return doc.id + "-" + doc.registeredAt;
+    }
+    /**
+     * Generate and save new password under `/user-setting/<uid>/password` and return it.
+     * @param uid the user's uid
+     */
+    static async generateNewPassword(uid) {
+        const password = utils_1.Utils.uuid();
+        await ref_1.Ref.userSettings(uid).set({ password: password });
+        return password;
     }
     static async getSignInToken(data) {
         const snapshot = await ref_1.Ref.signInTokenDoc(data.id).get();

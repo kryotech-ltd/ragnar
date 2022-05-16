@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:fireflutter/src/user/user.setting.service.dart';
 import '../fireflutter.dart';
 
 /// FunctionsApi
@@ -25,6 +26,9 @@ class FunctionsApi {
   }
 
   String get password {
+    if (UserSettingService.instance.password != '') {
+      return UserSettingService.instance.password;
+    }
     final u = UserService.instance;
     return u.uid + "-" + u.user.registeredAt.toString();
   }
@@ -34,14 +38,21 @@ class FunctionsApi {
   /// See details in README.md
   Future request(
     String functionName, {
-    Map<String, dynamic> data = const {},
+    Map<String, dynamic>? data,
     bool addAuth = false,
   }) async {
+    if (data == null) data = {};
     final dio = new Dio();
 
     if (addAuth) {
       data['uid'] = UserService.instance.uid;
-      data['password'] = password;
+
+      /// ! Remove 'password' on July.
+      if (UserSettingService.instance.password == '') {
+        data['password'] = password;
+      } else {
+        data['password2'] = password;
+      }
     }
 
     /// Debug URL
@@ -80,6 +91,7 @@ class FunctionsApi {
     } catch (e) {
       /// Dio error
       if (e is DioError) {
+        logUrl(functionName, data);
         throw e.message;
       } else {
         /// Unknown error

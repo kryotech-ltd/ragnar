@@ -20,6 +20,9 @@ class UserSettingService with DatabaseMixin {
   UserSettingsModel _settings = UserSettingsModel.empty();
   StreamSubscription? sub;
 
+  /// See readme for details.
+  String get password => _settings.password;
+
   /// This event will be posted whenever user settings document changes.
   // ignore: close_sinks
   BehaviorSubject<UserSettingsModel> changes = BehaviorSubject.seeded(
