@@ -97,8 +97,8 @@ export class User {
   }
 
   static async disableUser(
-      data: any,
-      context: any
+    data: any,
+    context: any
   ): Promise<
     | admin.auth.UserRecord
     | {
@@ -157,6 +157,15 @@ export class User {
       return {
         code: "ERROR_USER_SEARCH",
         message: (e as Error).message,
+      };
+    }
+  }
+
+  static async userSearch(data: { uid: string; name: string; phoneNumber: string }) {
+    if (!(await this.isAdmin(data.uid))) {
+      return {
+        code: ERROR_YOU_ARE_NOT_ADMIN,
+        message: "To manage user, you need to sign-in as an admin.",
       };
     }
   }

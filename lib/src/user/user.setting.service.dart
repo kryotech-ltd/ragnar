@@ -121,22 +121,22 @@ class UserSettingService with DatabaseMixin {
     );
   }
 
-  Future<void> subscribe(String topic, String type) {
+  Future<dynamic> subscribe(String topic, String type) {
     return FunctionsApi.instance
         .request('subscribeTopic', data: {'topic': topic, 'type': type}, addAuth: true);
   }
 
-  Future<void> unsubscribe(String topic, String type) {
+  Future<dynamic> unsubscribe(String topic, String type) {
     return FunctionsApi.instance
         .request('unsubscribeTopic', data: {'topic': topic, 'type': type}, addAuth: true);
   }
 
-  Future<void> topicOn(String topic, String type) {
+  Future<dynamic> topicOn(String topic, String type) {
     return FunctionsApi.instance
         .request('topicOn', data: {'topic': topic, 'type': type}, addAuth: true);
   }
 
-  Future<void> topicOff(String topic, String type) {
+  Future<dynamic> topicOff(String topic, String type) {
     return FunctionsApi.instance
         .request('topicOff', data: {'topic': topic, 'type': type}, addAuth: true);
   }
