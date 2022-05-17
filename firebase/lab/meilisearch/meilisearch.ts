@@ -162,6 +162,8 @@ export class Meilisearch {
         middleName: value.middleName ?? "",
         lastName: value.lastName ?? "",
         photoUrl: value.photoUrl ?? "",
+        email: value.email ?? "",
+        disabled: value.disabled && value.disabled === true ? "Y" : "N",
         registeredAt: value.registeredAt,
         updatedAt: value.updatedAt,
       };

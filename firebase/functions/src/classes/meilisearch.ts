@@ -237,6 +237,8 @@ export class Meilisearch {
     const _data = {
       id: data.uid,
       photoUrl: data.photoURL ?? "",
+      email: data.email ?? "",
+      disabled: false,
       registeredAt: Utils.getTimestamp(),
       updatedAt: Utils.getTimestamp(),
     };
@@ -262,7 +264,9 @@ export class Meilisearch {
       before.middleName === after.middleName &&
       before.lastName === after.lastName &&
       before.gender === after.gender &&
-      before.photoUrl === after.photoUrl
+      before.photoUrl === after.photoUrl &&
+      before.email === after.email &&
+      before.disabled === after.disabled
     ) {
       return null;
     }
@@ -274,6 +278,8 @@ export class Meilisearch {
       firstName: after.firstName ?? "",
       middleName: after.middleName ?? "",
       lastName: after.lastName ?? "",
+      email: after.email ?? "",
+      disabled: after.disabled && after.disabled === true ? "Y" : "N",
       updatedAt: Utils.getTimestamp(),
     };
 

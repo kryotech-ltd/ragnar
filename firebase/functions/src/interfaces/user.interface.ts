@@ -18,6 +18,9 @@ export interface UserDocument {
   birthday: number;
 
   password?: string;
+
+  email?: string;
+  disabled?: boolean;
 }
 
 export interface UserCreate {
