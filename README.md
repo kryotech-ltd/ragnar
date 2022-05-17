@@ -146,6 +146,7 @@ Table of contents
     - [Cloud functions Sample codes](#cloud-functions-sample-codes)
   - [Meilisearch](#meilisearch)
   - [Re-indexing documents](#re-indexing-documents)
+  - [Searching with meilisearch](#searching-with-meilisearch)
 - [Backup](#backup)
   - [Firestore backup](#firestore-backup)
 - [Point](#point)
@@ -2186,6 +2187,13 @@ https://docs.google.com/document/d/1tSJJt8iJsXNl9vcBqYhKPkiRZR5JFo-SQE2SJ90GItA/
 
 - Forum and user documents can be re-indexed if needed.
 - see `meilisearch-reindex.ts` for more info.
+
+
+## Searching with meilisearch
+
+- See office document - https://docs.meilisearch.com/reference/api/search.html#search
+- Example of search user - `http://wonderfulkorea.kr:7700/indexes/users/search?q=JaeHo`
+
 
 # Backup
 

@@ -119,8 +119,8 @@ export class User {
   }
 
   static async disableUser(
-      data: any,
-      context: any
+    data: any,
+    context: any
   ): Promise<
     | admin.auth.UserRecord
     | {
@@ -188,6 +188,7 @@ export class User {
    * ! warning. this is very week password, but it is difficult to guess.
    * ! You may add more properties like `phone number`, `email` to make the password more strong.
    *
+   * @deprecated Do not use this anymore.
    * @param doc user model
    * @returns password string
    */
