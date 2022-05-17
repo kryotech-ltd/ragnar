@@ -12,15 +12,15 @@ dependencies:
     sdk: flutter
 
   # Firebase Dependencies
-  firebase_core: ^1.16.0
-  firebase_auth: ^3.3.17
-  firebase_database: ^9.0.13
-  cloud_firestore: ^3.1.14
-  firebase_dynamic_links: ^4.2.2
-  firebase_storage: ^10.2.15
-  firebase_messaging: ^11.3.0
-  cloud_functions: ^3.2.14
-  flutterfire_ui: ^0.4.0+5
+  firebase_core: ^1.17.0
+  firebase_auth: ^3.3.18
+  firebase_database: ^9.0.14
+  cloud_firestore: ^3.1.15
+  firebase_dynamic_links: ^4.2.3
+  firebase_storage: ^10.2.16
+  firebase_messaging: ^11.4.0
+  cloud_functions: ^3.2.15
+  flutterfire_ui: ^0.4.1
 
   #
   rxdart: ^0.27.3
@@ -45,12 +45,13 @@ dependencies:
 
   # geocoding, geolocator, google_maps_flutter, flutter_polyline_points are for `Find Friend`.
   geocoding: ^2.0.1
-  geolocator: ^8.2.0
+  geolocator: ^8.2.1
   google_maps_flutter: ^2.1.1
   # flutter_polyline_points: ^1.0.0
 
   # reminder service,
   shared_preferences: ^2.0.12
+
 
   # date and time
   jiffy: ^5.0.0
@@ -91,6 +92,8 @@ dependencies:
 
   # iOS style date picker
   flutter_holo_date_picker: ^1.0.3
+
+
 
 dev_dependencies:
   flutter_test:

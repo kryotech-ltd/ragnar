@@ -38,8 +38,10 @@ Table of contents
   - [User installation](#user-installation)
   - [User data and user profile](#user-data-and-user-profile)
   - [UserModel](#usermodel)
+    - [UserModel.load()](#usermodelload)
   - [UserService](#userservice)
   - [User setting service](#user-setting-service)
+    - [UserService and password](#userservice-and-password)
     - [SettingBox](#settingbox)
   - [Profile ready](#profile-ready)
   - [Phone number sign-in](#phone-number-sign-in)
@@ -253,7 +255,12 @@ Table of contents
       ".read": true,
       ".indexOn": ["disabled", "profileReady"],
       "$uid": {
-        ".write": "$uid === auth.uid"
+        "registeredAt": {
+          ".write": "!data.exists()",
+        },
+        "$other": {
+          ".write": "$uid === auth.uid",
+        }
       }
     },
     "user-settings": {
@@ -291,6 +298,10 @@ Table of contents
     },
     "tests": {
       ".read": true,
+      ".write": true
+    },
+    "sign-in-token": {
+      ".read": false,
       ".write": true
     }
   }
@@ -555,8 +566,22 @@ TextButton(
 ## UserModel
 
 
-- Note that, If the app knows only user's uid, then it can create user model and use some of the user model's methods.
+- Note that, If the app knows only user's uid, then it can create user model (Not user docuemnt) and use some of the user model's methods.
 
+- Note, when user sign-in for the first time, `{ registeredAt, updatedAt, profileReady }` will be set at `/users/<uid>` in realtime database by cloud function. This is called `user-doc-init-by-function`.
+  - So, it's important to know that when user signs in for the first time, the app may want to update `lastSignIn` on user's profile document and load it. But the `registeredAt` may be 0. This is because `registeredAt` is set by cloud function asynchronously.
+    - What if the app update's `profileReady` to different value (this may happen on testing) immediately after user signs in, and later `user-doc-init-by-function` happens? That's right, `profileReady` may be reset in this case. But normal use case, this won't happen.
+
+- When user signs-in for the first time, `UserModel.load()` will be called immediately after sign-in and the loaded user document may not have proper data on `{ registeredAt, updatedAt, profileReady }` since `user-doc-init-by-function` will happen a bit late. This is simply fine.
+
+
+### UserModel.load()
+
+- This loads user data(information) into the its member variables.
+  - This is being invoked immediately after user sign-in Firebase Auth.
+- The return value must be set to `user` member variable of the user service, Unless it would produce unexpected error.
+
+- Example of code in `UserService`
 ```dart
 /// Put user uid on UserModel, and the app can use the model's member methods already.
 user = UserModel(uid: uid);
@@ -565,7 +590,7 @@ user = UserModel(uid: uid);
 user.updateLastSignInAt();
 
 /// Load user data and set it into member variables.
-await user.load();
+user = await user.load();
 
 /// Print user properties.
 print(user);
@@ -582,11 +607,13 @@ final user = UserModel(uid: '... uid ...')..load();
 
 ## User setting service
 
-
 - User settings are saved under `/user-settings/<uid>` in realtime database.
-- `UserSettinService` is handling the update of user setting.
-- `UserSettinService.instance.changes` event is posted whenever user's setting is changed.
-- `UserSettinService` is used in many places.
+  - Public user profile data is saved under `/users`, and private user data is saved under `/user-settings`.
+- `UserSettingService` is handling the update of user setting.
+- When `UserSettingService.instance` is accessed for the first time, it listens to the change of `/user-settings/<uid>` and,
+  - `UserSettingService.instance.changes` event is posted whenever user's setting is changed.
+  - The app may call `UserSettingService.instance.init()` on `main` for initialization on the app booting.
+- `UserSettingService` is used in many places.
   - It` is connected to `UserModel.settings`.
   - It has methods for handling push notification topics.
 - Best way to use it
@@ -614,6 +641,20 @@ UserSettingDoc(
 )
 ```
 
+### UserService and password
+
+- When user signs in, the UserService will load user password at `/user-settings/<uid>/password`.
+  - The password is not part of user profile data. It is saved under `/user-settings`, So, it is dealt with `UserSettingService`.
+  - If the password does not exists, then it will create one.
+- To get password,
+  - Do - `user.settings.value('password')`. This may not be updated when user password has changed.
+  - Or do - `UserSettingDoc(builder: (setting) => Text('Password: ${setting.password}'))`. This will update if user settings (including password) changes.
+
+- `FunctionsApi` will use this password as the sign-in user's identity.
+  - Then cloud function will get the password from database and compares it.
+
+
+- See `<root>/firebase/functions/tests/user/auth.spec.ts` for test.
 
 ### SettingBox
 
@@ -1933,7 +1974,20 @@ QuickMenuCategories(
 
 # Location Service
 
+- `LocationService` provides the uesr's location information.
 - Use this service to get current location positoin.
+- When `LocationService.instance.currentPosition` is being called, it will check the permission automatically.
+  - So, use `currentPosition` to get the user's current latitude and longitude and the permission check will be done automatically.
+```dart
+final position = await LocationService.instance.currentPosition;
+controller.animateCamera(
+  CameraUpdate.newCameraPosition(
+    CameraPosition(
+      target: LatLng(position.latitude, position.longitude),
+    ),
+  ),
+);
+```
 
 # Cloud Functions
 

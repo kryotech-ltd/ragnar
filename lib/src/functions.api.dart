@@ -25,6 +25,9 @@ class FunctionsApi {
   }
 
   String get password {
+    if (UserSettingService.instance.password != '') {
+      return UserSettingService.instance.password;
+    }
     final u = UserService.instance;
     return u.uid + "-" + u.user.registeredAt.toString();
   }
@@ -34,14 +37,21 @@ class FunctionsApi {
   /// See details in README.md
   Future request(
     String functionName, {
-    Map<String, dynamic> data = const {},
+    Map<String, dynamic>? data,
     bool addAuth = false,
   }) async {
+    if (data == null) data = {};
     final dio = new Dio();
 
     if (addAuth) {
       data['uid'] = UserService.instance.uid;
-      data['password'] = password;
+
+      /// ! Remove 'password' on July.
+      if (UserSettingService.instance.password == '') {
+        data['password'] = password;
+      } else {
+        data['password2'] = password;
+      }
     }
 
     /// Debug URL
@@ -57,11 +67,13 @@ class FunctionsApi {
 
       /// If the response is a string and begins with `ERROR_`, then it is an error.
       if (res.data is String && (res.data as String).startsWith('ERROR_')) {
+        logUrl(functionName, data);
         throw res.data;
       } else
 
       /// If the response is an Map(object) and has a non-empty value of `code` property, then it is considered as an error.
       if (res.data is Map && res.data['code'] != null && res.data['code'] != '') {
+        logUrl(functionName, data);
         throw res.data['code'];
       } else
 
@@ -69,6 +81,7 @@ class FunctionsApi {
       if (res.data is String &&
           (res.data as String).contains('code') &&
           (res.data as String).contains('ERR_')) {
+        logUrl(functionName, data);
         throw res.data;
       } else {
         /// success
@@ -77,9 +90,11 @@ class FunctionsApi {
     } catch (e) {
       /// Dio error
       if (e is DioError) {
+        logUrl(functionName, data);
         throw e.message;
       } else {
         /// Unknown error
+        logUrl(functionName, data);
         rethrow;
       }
     }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -19,6 +20,9 @@ class UserSettingService with DatabaseMixin {
   UserSettingsModel _settings = UserSettingsModel.empty();
   StreamSubscription? sub;
 
+  /// See readme for details.
+  String get password => _settings.password;
+
   /// This event will be posted whenever user settings document changes.
   // ignore: close_sinks
   BehaviorSubject<UserSettingsModel> changes = BehaviorSubject.seeded(
@@ -33,13 +37,16 @@ class UserSettingService with DatabaseMixin {
 
   List<String> topicsDontNeedSubscription = ['newCommentUnderMyPostOrComment'];
 
+  /// Dummy method to activate UserSettingService object.
+  init() {}
+
   /// User auth changes
   ///
   /// When auth changes, listen to newly signed-in user's setting.
   ///
   initAuthChanges() {
     FirebaseAuth.instance.authStateChanges().listen(
-      (_user) async {
+      (_user) {
         sub?.cancel();
         _settings = UserSettingsModel.empty();
         if (_user == null) {
@@ -49,14 +56,18 @@ class UserSettingService with DatabaseMixin {
             /// Note, anonymous sigin-in is not supported by fireflutter.
           } else {
             // print('path; ${userSettingsDoc.path}');
-            sub = userSettingsDoc.onValue.listen((event) {
+            sub = userSettingsDoc.onValue.listen((event) async {
               // if settings doc does not exists, just use default empty setting.
               if (event.snapshot.exists) {
                 // print('UserSettingService; Got new data');
                 _settings = UserSettingsModel.fromJson(event.snapshot.value);
+                if (_settings.password == '') {
+                  log("password is empty. generate now");
+                  _settings.generatePassword();
+                }
               } else {
-                // create the document /user-settings/uid with timestamp to avoid error when saving data with doc/data
-                create();
+                /// create the document /user-settings/uid with timestamp to avoid error when saving data with doc/data
+                _settings = await _settings.create();
               }
               changes.add(_settings);
             }, onError: (e) {
@@ -147,10 +158,6 @@ class UserSettingService with DatabaseMixin {
     } else {
       await this.topicOff(topic, type);
     }
-  }
-
-  Future<void> create() {
-    return _settings.create();
   }
 
   Future<List> unsubscribeAllTopic() async {

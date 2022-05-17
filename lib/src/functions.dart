@@ -112,7 +112,7 @@ Future<String> getAbsoluteTemporaryFilePath(String relativePath) async {
 }
 
 /// Return UUID
-String getRandomString({int len = 16}) {
+String getRandomString() {
   const uuid = Uuid();
   return uuid.v4();
 }

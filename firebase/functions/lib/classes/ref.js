@@ -106,9 +106,11 @@ class Ref {
     static userSettingForumTopics(uid) {
         return this.userSettingTopic(uid).child("forum");
     }
+    // / Returns the reference of all the settings in the `/user-settings/<uid>` folder.
     static userSettings(uid) {
         return this.rdb.ref("user-settings").child(uid);
     }
+    // / Returns the reference of one setting(or subfolder) of the `/user-settings/<uid>/<setting>`.
     static userSetting(uid, setting) {
         return this.userSettings(uid).child(setting);
     }

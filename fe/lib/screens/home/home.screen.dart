@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 spaceXs,
                 MyDoc(builder: (my) => Text('Login as ${my.displayName}, uid: ${my.uid}')),
+                UserSettingDoc(builder: (setting) => Text('Password: ${setting.password}')),
                 NewUsers(onTap: (user) => service.router.openOtherUserProfile(user.uid)),
                 spaceXs,
                 QuickMenuCategories(

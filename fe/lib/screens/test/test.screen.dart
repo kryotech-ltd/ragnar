@@ -35,7 +35,7 @@ class TestScreen extends StatefulWidget {
   State<TestScreen> createState() => _TestScreenState();
 }
 
-class _TestScreenState extends State<TestScreen> {
+class _TestScreenState extends State<TestScreen> with DatabaseMixin {
   @override
   void initState() {
     super.initState();
@@ -156,6 +156,59 @@ class _TestScreenState extends State<TestScreen> {
               ServerTime(),
               const Divider(),
               const Text('Test users;'),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      final stamp = DateTime.now().millisecondsSinceEpoch;
+                      final email = 'test-$stamp@gmail.com';
+                      final password = '12345a,*';
+                      try {
+                        await FirebaseAuth.instance.signInWithEmailAndPassword(
+                          email: email,
+                          password: password,
+                        );
+                        AppService.instance.router.openHome();
+                      } on FirebaseException catch (e) {
+                        print(e.code);
+                        if (e.code == 'user-not-found') {
+                          final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                            email: email,
+                            password: password,
+                          );
+
+                          debugPrint(
+                              'Email and password creation success on user $email, ${cred.user?.uid}');
+                          await userDoc(cred.user!.uid).update({
+                            'email': email,
+                            'birthday': 19901230,
+                            'firstName': 'First Name',
+                            'lastName': 'Last Name',
+                            'profileReady': 90000000000000,
+                            'photoUrl':
+                                'https://firebasestorage.googleapis.com/v0/b/wonderful-korea.appspot.com/o/uploads%2F22336e15-8b50-487d-8ac8-d1ade3c842b0.jpg?alt=media&token=5a4acc7e-507c-42ad-9461-245f56d614cf',
+                            'gender': 'M',
+                          });
+                          AppService.instance.router.openHome();
+                        } else {
+                          AppService.instance.error(e);
+                        }
+                      }
+                    },
+                    child: Text('Generate random user'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.all(0),
+                      primary: Colors.grey.shade700,
+                    ),
+                  ),
+                  ElevatedButton(
+                      onPressed: () async {
+                        final re = await FunctionsApi.instance.request('authTest', addAuth: true);
+                        print('re; $re');
+                      },
+                      child: Text('Verify Auth'))
+                ],
+              ),
               Wrap(
                 alignment: WrapAlignment.spaceAround,
                 children: Config.testUsers.values
@@ -429,9 +482,10 @@ class _EmailButtonState extends State<EmailButton> {
 
     /// reload and check if verified
     FirebaseAuth.instance.currentUser!.reload().then((value) {
-      setState(() {
-        verified = FirebaseAuth.instance.currentUser!.emailVerified;
-      });
+      if (mounted)
+        setState(() {
+          verified = FirebaseAuth.instance.currentUser!.emailVerified;
+        });
     });
   }
 

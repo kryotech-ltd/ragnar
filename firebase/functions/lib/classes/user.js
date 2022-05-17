@@ -5,39 +5,55 @@ const defines_1 = require("../defines");
 const ref_1 = require("./ref");
 const utils_1 = require("./utils");
 const admin = require("firebase-admin");
+const setting_1 = require("./setting");
 // import { GetUsersResult } from "firebase-admin/lib/auth/base-auth";
 // import { ErrorCodeMessage } from "../interfaces/common.interface";
 class User {
     static get auth() {
         return admin.auth();
     }
+    /**
+     * Update (Not create or set) the profile document.
+     * @param uid uid of the user
+     * @param data data to update as the user profile
+     */
     static async create(uid, data) {
         data.updatedAt = utils_1.Utils.getTimestamp();
         data.registeredAt = utils_1.Utils.getTimestamp();
-        return ref_1.Ref.userDoc(uid).set(data);
+        data.profileReady = 90000000000000;
+        return ref_1.Ref.userDoc(uid).update(data);
     }
     /**
      * Authenticates user with id and password.
      * @param data input data that has uid and password
      * @returns Error string on error(not throwing as an exception). Empty string on success.
+     *
+     * ! `data.password` uses user's `registeredAt`. And this will be removed on Jul.
      */
     static async authenticate(data) {
         if (!data.uid) {
             return defines_1.ERROR_EMPTY_UID;
         }
-        else if (!data.password) {
+        else if (!data.password && !data.password2) {
             return defines_1.ERROR_EMPTY_PASSWORD;
         }
-        else {
-            const user = await this.get(data.uid);
-            if (user === null) {
-                return defines_1.ERROR_USER_NOT_FOUND;
-            }
+        // console.log("data; ", data);
+        // Check if user exists.
+        const user = await this.get(data.uid);
+        if (user === null) {
+            return defines_1.ERROR_USER_NOT_FOUND;
+        }
+        if (data.password) {
             const password = this.generatePassword(user);
             if (password === data.password)
                 return "";
             else
                 return defines_1.ERROR_WRONG_PASSWORD;
+        }
+        else {
+            const passwordDb = await setting_1.Setting.value(data.uid, "password");
+            // console.log("passwordDb; ", passwordDb);
+            return data.password2 == passwordDb ? "" : defines_1.ERROR_WRONG_PASSWORD;
         }
     }
     /**
@@ -153,12 +169,30 @@ class User {
     static generatePassword(doc) {
         return doc.id + "-" + doc.registeredAt;
     }
+    /**
+     * Generate and save new password under `/user-setting/<uid>/password` and return it.
+     * @param uid the user's uid
+     */
+    static async generateNewPassword(uid) {
+        const password = utils_1.Utils.uuid();
+        await ref_1.Ref.userSettings(uid).set({ password: password });
+        return password;
+    }
+    /**
+     * Returns user profile data at `/users/<uid>` plus `/user-settings/<uid>/password`.
+     * @param data data.id is the user uid.
+     */
     static async getSignInToken(data) {
         const snapshot = await ref_1.Ref.signInTokenDoc(data.id).get();
         if (snapshot.exists()) {
             const val = snapshot.val();
             await ref_1.Ref.signInTokenDoc(data.id).remove();
-            return await User.get(val.uid);
+            const user = await User.get(val.uid);
+            if (user) {
+                const password = await setting_1.Setting.value(user.id, "password");
+                user.password = password;
+            }
+            return user;
         }
         throw defines_1.ERROR_SIGNIN_TOKEN_NOT_EXISTS;
     }

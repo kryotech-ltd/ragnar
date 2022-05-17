@@ -60,6 +60,7 @@ class _MainAppState extends State<MainApp> {
 
     FunctionsApi.instance.init(
       serverUrl: "https://asia-northeast3-withcenter-test-project.cloudfunctions.net/",
+      // "http://localhost:5001/withcenter-test-project/us-central1/",
       // onError: error,
     );
 
