@@ -33,3 +33,7 @@ Total of 948 documents under 'posts' collection on the database.
 Total of 110 documents under 'comments' collection on the database.
 [MARK AS DELETED]: 34 out of 110 documents.
 [SUCCESSFULLY INDEXED]: 76 out of 110 documents.
+
+==============================================================
+Total of 72 documents under 'users' collection on database.
+[SUCCESSFULLY INDEXED]: 72 documents.

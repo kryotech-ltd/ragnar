@@ -178,12 +178,21 @@ class User {
         await ref_1.Ref.userSettings(uid).set({ password: password });
         return password;
     }
+    /**
+     * Returns user profile data at `/users/<uid>` plus `/user-settings/<uid>/password`.
+     * @param data data.id is the user uid.
+     */
     static async getSignInToken(data) {
         const snapshot = await ref_1.Ref.signInTokenDoc(data.id).get();
         if (snapshot.exists()) {
             const val = snapshot.val();
             await ref_1.Ref.signInTokenDoc(data.id).remove();
-            return await User.get(val.uid);
+            const user = await User.get(val.uid);
+            if (user) {
+                const password = await setting_1.Setting.value(user.id, "password");
+                user.password = password;
+            }
+            return user;
         }
         throw defines_1.ERROR_SIGNIN_TOKEN_NOT_EXISTS;
     }

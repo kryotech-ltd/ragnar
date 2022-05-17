@@ -183,6 +183,15 @@ export class User {
     }
   }
 
+  static async userSearch(data: { uid: string; name: string; phoneNumber: string }) {
+    if (!(await this.isAdmin(data.uid))) {
+      return {
+        code: ERROR_YOU_ARE_NOT_ADMIN,
+        message: "To manage user, you need to sign-in as an admin.",
+      };
+    }
+  }
+
   /**
    *
    * ! warning. this is very week password, but it is difficult to guess.
@@ -218,8 +227,8 @@ export class User {
       await Ref.signInTokenDoc(data.id).remove();
       const user = await User.get(val.uid);
       if (user) {
-        user!.password = await Setting.value(data.id, "password");
-        return user;
+        const password = await Setting.value(user.id, "password");
+        user!.password = password;
       }
       return user;
     }

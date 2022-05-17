@@ -49,15 +49,15 @@ export class Meilisearch {
   static async resetSearchSettings() {
     const promises = [];
 
-    /// users index
+    // users index
     promises.push(this.client.index(this.USER_INDEX).updateSettings({
       displayedAttributes: ['*'],
       searchableAttributes: ['*'],
       sortableAttributes: ['registeredAt'],
-      filterableAttributes: ["id"],
+      filterableAttributes: ["firstName","gender","id","lastName", "email", "disabled"],
       rankingRules: ["words","typo","proximity","attribute","sort","exactness"],
     }))
-    /// posts-and-comments index
+    // posts-and-comments index
     promises.push(this.client.index('posts-and-comments').updateSettings({
       displayedAttributes: ['*'],
       sortableAttributes: ['createdAt'],
@@ -65,7 +65,7 @@ export class Meilisearch {
       filterableAttributes: ["category","id","uid"],
       rankingRules: ["words","exactness","typo","attribute","proximity","sort"],
     }))
-    /// posts index
+    // posts index
     promises.push(this.client.index(this.POST_INDEX).updateSettings({
       displayedAttributes: ['*'],
       sortableAttributes: ['createdAt'],
@@ -73,7 +73,7 @@ export class Meilisearch {
       filterableAttributes: ["category","id","uid"],
       rankingRules: ["words","exactness","typo","attribute","proximity","sort"],
     }))
-    /// comments index
+    // comments index
     promises.push(this.client.index(this.COMMENT_INDEX).updateSettings({
       displayedAttributes: ['*'],
       sortableAttributes: ['createdAt'],
@@ -162,6 +162,8 @@ export class Meilisearch {
         middleName: value.middleName ?? "",
         lastName: value.lastName ?? "",
         photoUrl: value.photoUrl ?? "",
+        email: value.email ?? "",
+        disabled: value.disabled && value.disabled === true ? "Y" : "N",
         registeredAt: value.registeredAt,
         updatedAt: value.updatedAt,
       };

@@ -194,10 +194,12 @@ class Meilisearch {
      * @return promise
      */
     static async indexUserCreate(data) {
-        var _a;
+        var _a, _b;
         const _data = {
             id: data.uid,
             photoUrl: (_a = data.photoURL) !== null && _a !== void 0 ? _a : "",
+            email: (_b = data.email) !== null && _b !== void 0 ? _b : "",
+            disabled: false,
             registeredAt: utils_1.Utils.getTimestamp(),
             updatedAt: utils_1.Utils.getTimestamp(),
         };
@@ -211,14 +213,16 @@ class Meilisearch {
      * @return promise
      */
     static async indexUserUpdate(changes, context) {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d, _e, _f;
         const before = changes.before;
         const after = changes.after;
         if (before.firstName === after.firstName &&
             before.middleName === after.middleName &&
             before.lastName === after.lastName &&
             before.gender === after.gender &&
-            before.photoUrl === after.photoUrl) {
+            before.photoUrl === after.photoUrl &&
+            before.email === after.email &&
+            before.disabled === after.disabled) {
             return null;
         }
         const _data = {
@@ -228,6 +232,8 @@ class Meilisearch {
             firstName: (_c = after.firstName) !== null && _c !== void 0 ? _c : "",
             middleName: (_d = after.middleName) !== null && _d !== void 0 ? _d : "",
             lastName: (_e = after.lastName) !== null && _e !== void 0 ? _e : "",
+            email: (_f = after.email) !== null && _f !== void 0 ? _f : "",
+            disabled: after.disabled && after.disabled === true ? "Y" : "N",
             updatedAt: utils_1.Utils.getTimestamp(),
         };
         return this.client.index(this.USERS_INDEX).addDocuments([_data]);
