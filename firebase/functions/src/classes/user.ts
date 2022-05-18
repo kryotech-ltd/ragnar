@@ -9,6 +9,7 @@ import {
   ERROR_USER_AUTH_NOT_FOUND,
   ERROR_USER_DOC_NOT_FOUND,
   ERROR_SIGNIN_TOKEN_NOT_EXISTS,
+  ERROR_EMPTY_ID,
 } from "../defines";
 import { UserCreate, UserDocument } from "../interfaces/user.interface";
 import { Ref } from "./ref";
@@ -65,6 +66,7 @@ export class User {
       if (password === data.password) return "";
       else return ERROR_WRONG_PASSWORD;
     } else {
+      // password version 2.
       const passwordDb = await Setting.value(data.uid, "password");
       // console.log("passwordDb; ", passwordDb);
       return data.password2 == passwordDb ? "" : ERROR_WRONG_PASSWORD;
@@ -119,8 +121,8 @@ export class User {
   }
 
   static async disableUser(
-    data: any,
-    context: any
+      data: any,
+      context: any
   ): Promise<
     | admin.auth.UserRecord
     | {
@@ -183,14 +185,14 @@ export class User {
     }
   }
 
-  static async userSearch(data: { uid: string; name: string; phoneNumber: string }) {
-    if (!(await this.isAdmin(data.uid))) {
-      return {
-        code: ERROR_YOU_ARE_NOT_ADMIN,
-        message: "To manage user, you need to sign-in as an admin.",
-      };
-    }
-  }
+  // static async userSearch(data: { uid: string; name: string; phoneNumber: string }) {
+  //   if (!(await this.isAdmin(data.uid))) {
+  //     return {
+  //       code: ERROR_YOU_ARE_NOT_ADMIN,
+  //       message: "To manage user, you need to sign-in as an admin.",
+  //     };
+  //   }
+  // }
 
   /**
    *
@@ -218,8 +220,10 @@ export class User {
   /**
    * Returns user profile data at `/users/<uid>` plus `/user-settings/<uid>/password`.
    * @param data data.id is the user uid.
+   *
    */
   static async getSignInToken(data: { id: string }): Promise<UserDocument | null> {
+    if (!data.id) throw ERROR_EMPTY_ID;
     const snapshot = await Ref.signInTokenDoc(data.id).get();
 
     if (snapshot.exists()) {

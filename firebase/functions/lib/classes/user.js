@@ -51,6 +51,7 @@ class User {
                 return defines_1.ERROR_WRONG_PASSWORD;
         }
         else {
+            // password version 2.
             const passwordDb = await setting_1.Setting.value(data.uid, "password");
             // console.log("passwordDb; ", passwordDb);
             return data.password2 == passwordDb ? "" : defines_1.ERROR_WRONG_PASSWORD;
@@ -158,11 +159,20 @@ class User {
             };
         }
     }
+    // static async userSearch(data: { uid: string; name: string; phoneNumber: string }) {
+    //   if (!(await this.isAdmin(data.uid))) {
+    //     return {
+    //       code: ERROR_YOU_ARE_NOT_ADMIN,
+    //       message: "To manage user, you need to sign-in as an admin.",
+    //     };
+    //   }
+    // }
     /**
      *
      * ! warning. this is very week password, but it is difficult to guess.
      * ! You may add more properties like `phone number`, `email` to make the password more strong.
      *
+     * @deprecated Do not use this anymore.
      * @param doc user model
      * @returns password string
      */
@@ -181,8 +191,11 @@ class User {
     /**
      * Returns user profile data at `/users/<uid>` plus `/user-settings/<uid>/password`.
      * @param data data.id is the user uid.
+     *
      */
     static async getSignInToken(data) {
+        if (!data.id)
+            throw defines_1.ERROR_EMPTY_ID;
         const snapshot = await ref_1.Ref.signInTokenDoc(data.id).get();
         if (snapshot.exists()) {
             const val = snapshot.val();
